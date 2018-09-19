@@ -14,23 +14,39 @@ namespace BornFrustrated.Pathfinding
 
 		public Vector2Int SpriteSize = new Vector2Int(32, 32);
 
-		private Sprite sprite;
-
-		public override void GetTileData(Vector3Int location, ITilemap tileMap, ref TileData tileData)
+		public Color ColorTile
 		{
-			if(sprite == null)
+			get
 			{
-				Texture2D left = new Texture2D(SpriteSize.x, SpriteSize.y, TextureFormat.RGBA32, false);
- 				left.Apply();
+				return (isWalkable) ? Color.blue : Color.red;
+			}
+		}
 
-				 sprite = Sprite.Create(left,
+		private Sprite sprite;
+		private Sprite Sprite
+		{
+			get
+			{
+				if(sprite == null)
+				{
+					Texture2D left = new Texture2D(SpriteSize.x, SpriteSize.y, TextureFormat.RGBA32, false);
+ 					left.Apply();
+
+				 	sprite = Sprite.Create(left,
         								new Rect(0, 0, left.width, left.height),
         								new Vector2(0.5f,0.5f),
         								SpriteSize.x);
+				}
+				return sprite;
 			}
+		}
+		
+
+		public override void GetTileData(Vector3Int location, ITilemap tileMap, ref TileData tileData)
+		{
 			tileData.flags = TileFlags.None;
-			tileData.sprite = sprite;
-			tileData.color = (isWalkable) ? Color.blue : Color.red;
+			tileData.sprite = Sprite;
+			tileData.color = ColorTile;
 		}
 	}
 }
