@@ -2,6 +2,7 @@
 using UnityEngine.Tilemaps;
 using System.Collections.Generic;
 using System.Linq;
+using BornFrustrated.Pathfinding;
 
 namespace BornFrustrated
 {
@@ -11,12 +12,11 @@ namespace BornFrustrated
 
         public Transform player;
 
-        public TileBase targetTile;
-
         public Tilemap tileMap;
 
         private void Awake()
         {
+
             GenerateTiles();
         }
 
@@ -28,14 +28,14 @@ namespace BornFrustrated
             {
                 var localPlace = new Vector3Int(pos.x, pos.y, pos.z);
 
-                if (!tileMap.HasTile(localPlace)) continue; // if this tile map has not tile inside skip to the nextone
+                if (!tileMap.HasTile(localPlace) || tileMap.GetTile<WalkableTile>(localPlace) == null) continue; // if this tile map has not tile inside skip to the nextone
 
                 var tile = new Node
                 {
                     LocalPlace = localPlace,
                     WorldLocation = tileMap.CellToWorld(localPlace),
                     TileBase = tileMap.GetTile(localPlace),
-                    Walkable = !(tileMap.GetTile(localPlace) == targetTile), // Check if the current tilemap if equal to the target basetile, if is equal to true this tile map is not walkable
+                    Walkable = (tileMap.GetTile<WalkableTile>(localPlace).isWalkable), // Check if the current tilemap if equal to the target basetile, if is equal to true this tile map is not walkable
                     Name = localPlace.x + " , " + localPlace.y,
                     Cost = 1,
                 };
@@ -45,6 +45,13 @@ namespace BornFrustrated
 
         private void Update()
         {
+            if (player != null)
+                CheckPlayer();
+
+        }
+
+        private void CheckPlayer()
+        {
             var localPlace = tileMap.WorldToCell(player.position);
 
             var PlayerNode = new Node
@@ -52,7 +59,6 @@ namespace BornFrustrated
                 LocalPlace = localPlace,
                 WorldLocation = tileMap.CellToWorld(localPlace),
                 TileBase = tileMap.GetTile(localPlace),
-                Walkable = !(tileMap.GetTile(localPlace) == targetTile), // Check if the current tilemap if equal to the target basetile, if is equal to true this tile map is not walkable
                 Name = localPlace.x + " , " + localPlace.y,
             };
 
@@ -66,8 +72,8 @@ namespace BornFrustrated
 
                 }
             }
-
         }
+
     }
 }
 
