@@ -45,6 +45,7 @@ namespace BornFrustrated.Pathfinding
                 while (openSet.Count > 0)
                 {
                     Node currentNode = openSet.RemoveFirst();
+  
                     closedSet.Add(currentNode);
 
                     if (currentNode == targetNode)
