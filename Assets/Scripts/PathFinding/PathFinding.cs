@@ -24,44 +24,64 @@ namespace BornFrustrated.Pathfinding
 
         IEnumerator FindPath(Vector3 startPos, Vector3 targetPos)
         {
-
+            /// For Performance Only
             Stopwatch sw = new Stopwatch();
             sw.Start();
 
+            /// Result Array of Waypoints
             Vector3[] waypoints = new Vector3[0];
+            /// Control Variable.
             bool pathSuccess = false;
 
+            /// Get Start Node From Position and set root as
+            /// himself.
             Node startNode = grid.NodeFromWorldPoint(startPos);
-            Node targetNode = grid.NodeFromWorldPoint(targetPos);
             startNode.parent = startNode;
 
-
+            /// Get End Node From Position.
+            Node targetNode = grid.NodeFromWorldPoint(targetPos);
+            
+            /// If both StartNode and EndNode are walkable 
             if (startNode.Walkable && targetNode.Walkable)
             {
-                Heap<Node> openSet = new Heap<Node>(grid.tiles.Count);
-                HashSet<Node> closedSet = new HashSet<Node>();
+                /// Analyze Nodes with Heap Data Structure and store 
+                /// the ones not analyzed yet.
+                Heap<Node>    openSet = new Heap<Node>(grid.tiles.Count);
                 openSet.Add(startNode);
 
+                /// Store Already Analyzed Nodes.
+                HashSet<Node> closedSet = new HashSet<Node>();
+                
+                /// While there are nodes to analyze. . .
                 while (openSet.Count > 0)
                 {
+                    /// Get The first node and analyze.
                     Node currentNode = openSet.RemoveFirst();
-  
+                    /// Add current node into already analyzed stack.
                     closedSet.Add(currentNode);
 
+                    /// If Current node is our target, close path and 
+                    /// break the loop.
                     if (currentNode == targetNode)
                     {
                         sw.Stop();
-                        print("Path found: " + sw.ElapsedMilliseconds + " ms");
                         pathSuccess = true;
+
+                        UnityEngine.Debug.Log("Path found: " + sw.ElapsedMilliseconds + " ms");
                         break;
                     }
 
+                    /// Otherwhise, analyze every neighbour of the selected node
+                    /// and check here its values.
                     foreach (Node neighbour in grid.GetNeighbours(currentNode))
                     {
+                        /// Only if neighbour is not walkable or if it was already 
+                        /// analyzed, then continue and check another one.    
                         if (!neighbour.Walkable || closedSet.Contains(neighbour))
                         {
                             continue;
                         }
+
 
                         int newMovementCostToNeighbour = currentNode.GCost + GetDistance(currentNode, neighbour) + neighbour.MovePenality;
                         if (newMovementCostToNeighbour < neighbour.GCost || !openSet.Contains(neighbour))
@@ -79,13 +99,20 @@ namespace BornFrustrated.Pathfinding
                 }
             }
             yield return null;
+
+            /// If a path was found, then stop searching 
+            /// and try to trace a path in order to get waypoints 
+            /// correctly.
             if (pathSuccess)
             {
                 waypoints = RetracePath(startNode, targetNode);
             }
+
+
             pathRequest.FinishedProcessingPath(waypoints, pathSuccess);
 
         }
+
         int GetDistance(Node nodeA, Node nodeB)
         {
             int dstX = Mathf.Abs(nodeA.LocalPlace.x - nodeB.LocalPlace.x);
@@ -96,6 +123,14 @@ namespace BornFrustrated.Pathfinding
             return 14 * dstX + 10 * (dstY - dstX);
         }
 
+        /// <summary>
+        /// Retrace parent starting from EndNode and use the parent
+        /// property to find every relationship between nodes to 
+        /// StartNode
+        /// </summary>
+        /// <param name="startNode">Node To Start</param>
+        /// <param name="endNode">Node To End</param>
+        /// <returns>Return Path</returns>
         Vector3[] RetracePath(Node startNode, Node endNode)
         {
             List<Node> path = new List<Node>();
@@ -112,21 +147,22 @@ namespace BornFrustrated.Pathfinding
 
         }
 
+        /// <summary>
+        /// Get a list of position from a path of Nodes.
+        /// </summary>
+        /// <param name="path">Path to follow</param>
+        /// <returns>Get a positions List.</returns>
         Vector3[] SimplifyPath(List<Node> path)
         {
             List<Vector3> waypoints = new List<Vector3>();
-            Vector2 directionOld = Vector2.zero;
 
-            for (int i = 1; i < path.Count; i++)
+            for (int i = 0; i < path.Count; i++)
             {
-               /* Vector2 directionNew = new Vector2(path[i - 1].WorldLocation.x - path[i].LocalPlace.x, path[i - 1].LocalPlace.y - path[i].LocalPlace.y);
-                if (directionNew != directionOld)
-                {*/
-                    waypoints.Add(new Vector3(path[i].WorldLocation.x, path[i].WorldLocation.y, 0));
-               /* }
-                directionOld = directionNew;*/
+                waypoints.Add(new Vector3(path[i].WorldLocation.x, path[i].WorldLocation.y, 0));
             }
+
             return waypoints.ToArray();
         }
+
     }
 }

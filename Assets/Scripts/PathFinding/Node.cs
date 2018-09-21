@@ -21,24 +21,26 @@ namespace BornFrustrated.Pathfinding
 
         public int HCost { get; set; }
 
-        public int FCost {
-            get {
-                return GCost + HCost;
-            }
+        public int FCost 
+        {
+            get { return GCost + HCost;  }
             private set { FCost = value; }
         }
 
+        public int MovePenality 
+        { 
+            get { return movePenality;  }
+            set { movePenality = value; }
+        }
+
+        private int movePenality;
+
         private int heapIndex;
 
-        public int MovePenality { get; set; }
-
-        public int HeapIndex {
-            get {
-                return heapIndex;
-            }
-            set {
-                heapIndex = value;
-            }
+        public int HeapIndex 
+        {
+            get { return heapIndex;  }
+            set { heapIndex = value; }
         }
 
         public int CompareTo(Node nodeToCompare)

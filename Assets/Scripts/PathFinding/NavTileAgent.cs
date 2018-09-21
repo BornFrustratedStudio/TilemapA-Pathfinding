@@ -90,7 +90,7 @@ namespace BornFrustrated.Pathfinding
 			
 			PathRequestManager.RequestPath(transform.position, m_target.position, OnPathFound);
 
-			float sqrMoveThreshold = PATH_THRESHOLD * PATH_THRESHOLD;
+			float sqrMoveThreshold = PATH_THRESHOLD;
 			Vector3 targetPosOld = m_target.position;
 
 			while (!m_isStopped)
@@ -120,7 +120,7 @@ namespace BornFrustrated.Pathfinding
 
 		private IEnumerator FollowPath()
 		{
-            int  _pathIndex = 0;
+            /*int  _pathIndex = 0;
 
             float speedPercent = 1;
 
@@ -160,7 +160,33 @@ namespace BornFrustrated.Pathfinding
 
                 yield return null;
 
-            }
+            }*/
+
+			if (m_path.Length > 0) 
+			{
+				int _targetIndex = 0;
+				Vector2 currentWaypoint = m_path.points[0];
+
+				while (true) 
+				{
+					if ((Vector2)transform.position == currentWaypoint) 
+					{
+						_targetIndex++;
+
+						if (_targetIndex >= m_path.Length) 
+						{
+							yield break;
+						}
+
+						currentWaypoint = m_path.points[_targetIndex];
+						currentWaypoint = new Vector3(currentWaypoint.x + .5f, currentWaypoint.y + .5f);
+					}	
+
+					transform.position = Vector2.MoveTowards (transform.position, currentWaypoint, m_speed * Time.deltaTime);
+				yield return null;
+
+				}
+			}
 		}
 
 		private void PlayPath()
