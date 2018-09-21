@@ -119,12 +119,12 @@ namespace BornFrustrated.Pathfinding
 
             for (int i = 1; i < path.Count; i++)
             {
-                Vector2 directionNew = new Vector2(path[i - 1].WorldLocation.x - path[i].LocalPlace.x, path[i - 1].LocalPlace.y - path[i].LocalPlace.y);
+               /* Vector2 directionNew = new Vector2(path[i - 1].WorldLocation.x - path[i].LocalPlace.x, path[i - 1].LocalPlace.y - path[i].LocalPlace.y);
                 if (directionNew != directionOld)
-                {
-                    waypoints.Add(path[i].WorldLocation);
-                }
-                directionOld = directionNew;
+                {*/
+                    waypoints.Add(new Vector3(path[i].WorldLocation.x, path[i].WorldLocation.y, 0));
+               /* }
+                directionOld = directionNew;*/
             }
             return waypoints.ToArray();
         }

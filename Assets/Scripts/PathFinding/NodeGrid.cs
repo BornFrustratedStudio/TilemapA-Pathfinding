@@ -87,52 +87,51 @@ namespace BornFrustrated.Pathfinding
 
         private void Update()
         {
-            //PathRequestManager.RequestPath(player.position, target.position, point);
+            
             //if (player != null)
             //    CheckPlayer();
 
         }
         //#region Shitty path
-        //Action<Vector3[], bool> point;
-        //public Transform target;
+        Action<Vector3[], bool> point;
+        public Transform target;
 
-        //private void Start()
-        //{
-        //}
+private void Start() {
+    PathRequestManager.RequestPath(player.position, target.position, point);
+}
 
-        //private void OnEnable()
-        //{
-        //    point += CheckPathBox;
-        //}
-        //private void OnDisable()
-        //{
-        //    point -= CheckPathBox;
-        //}
+        private void OnEnable()
+        {
+            point += CheckPathBox;
+        }
+        private void OnDisable()
+    {
+           point -= CheckPathBox;
+        }
 
-        //void CheckPathBox(Vector3[] point, bool aasd)
-        //{
-        //    List<Node> node = new List<Node>();
+        void CheckPathBox(Vector3[] point, bool aasd)
+        {
+           List<Node> node = new List<Node>();
 
-        //    for (int i = 0; i < point.Length; i++)
-        //    {
-        //        if (tiles.ContainsKey(point[i]))
-        //        {
-        //            node.Add(tiles[new Vector3(point[i].x,point[i].y,0)]);
-        //        }
+           for (int i = 0; i < point.Length; i++)
+           {
+               if (tiles.ContainsKey(point[i]))
+               {
+                   node.Add(tiles[new Vector3(point[i].x,point[i].y,0)]);
+               }
 
-        //    }
+           }
 
-        //    if (node.Count > 0)
-        //    {
-        //        foreach (Node n in node)
-        //        {
-        //            UnityEngine.Debug.Log("Pippo");
-        //            tileMap.SetColor(n.LocalPlace, Color.gray);
-        //            tileMap.RefreshTile(n.LocalPlace);
-        //        }
-        //    }
-        //}
-        //#endregion
+           if (node.Count > 0)
+           {
+               foreach (Node n in node)
+               {
+                   UnityEngine.Debug.Log("Pippo");
+                   tileMap.SetColor(n.LocalPlace, Color.gray);
+                   tileMap.RefreshTile(n.LocalPlace);
+               }
+           }
+        }
 
         private void CheckPlayer()
         {
