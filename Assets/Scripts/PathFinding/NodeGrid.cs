@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.Tilemaps;
 using System.Collections.Generic;
+using UnityEditor;
 
 namespace BornFrustrated.Pathfinding
 {
@@ -8,11 +9,14 @@ namespace BornFrustrated.Pathfinding
     {
         public Dictionary<Vector2, Node> tiles;
         
-        public Transform player;
+        public Transform debugPlayer;
 
         public Tilemap tileMap;
 
-	    public int obstacleProximityPenalty = 10;
+        [SerializeField]
+	    private int obstacleProximityPenalty = 10;
+        [SerializeField]
+        private bool DebugNodeValue = true;
 
         private void Awake()
         {
@@ -28,8 +32,7 @@ namespace BornFrustrated.Pathfinding
 
             foreach (Vector3Int pos in tileMap.cellBounds.allPositionsWithin)
             {
-                UnityEngine.Debug.Log("CULO");
-                var localPlace = new Vector3Int(pos.x, pos.y, pos.z);
+                Vector3Int localPlace = new Vector3Int(pos.x, pos.y, pos.z);
 
                 if (!tileMap.HasTile(localPlace) || tileMap.GetTile<WalkableTile>(localPlace) == null) continue; // if this tile map has not tile inside skip to the nextone
 
@@ -101,7 +104,7 @@ namespace BornFrustrated.Pathfinding
         /// <returns>if is walkable</returns>
         public bool NodeIsWalkable(Vector3Int position)
         {
-            var localPlace = new Vector3Int(position.x, position.y, position.z);
+            Vector3Int localPlace = new Vector3Int(position.x, position.y, position.z);
 
             if (!tileMap.HasTile(localPlace) || tileMap.GetTile<WalkableTile>(localPlace) == null)
                 return false;
@@ -131,5 +134,49 @@ namespace BornFrustrated.Pathfinding
             }
             return null;
         }
+
+        private void OnDrawGizmos()
+        {
+            if(Application.isPlaying && DebugNodeValue)
+                DebugFCost();
+        }
+
+        void DebugFCost()
+        {
+            foreach (Node item in tiles.Values)
+            {
+                DrawString(item.FCost.ToString(), new Vector3(item.WorldLocation.x + 0.5f, item.WorldLocation.y + 1.5f), Color.white);
+            }
+        }
+
+        public static void DrawString(string text, Vector3 worldPos, Color? textColor = null, Color? backColor = null)
+        {
+            UnityEditor.Handles.BeginGUI();
+            var restoreTextColor = GUI.color;
+            var restoreBackColor = GUI.backgroundColor;
+
+            GUI.color = textColor ?? Color.white;
+            GUI.backgroundColor = backColor ?? Color.black;
+
+            var view = UnityEditor.SceneView.currentDrawingSceneView;
+            if (view != null && view.camera != null)
+            {
+                Vector3 screenPos = view.camera.WorldToScreenPoint(worldPos);
+                if (screenPos.y < 0 || screenPos.y > Screen.height || screenPos.x < 0 || screenPos.x > Screen.width || screenPos.z < 0)
+                {
+                    GUI.color = restoreTextColor;
+                    UnityEditor.Handles.EndGUI();
+                    return;
+                }
+                Vector2 size = GUI.skin.label.CalcSize(new GUIContent(text));
+                var r = new Rect(screenPos.x - (size.x / 2), -screenPos.y + view.position.height + 4, size.x, size.y);
+                GUI.Box(r, text, EditorStyles.numberField);
+                GUI.Label(r, text);
+                GUI.color = restoreTextColor;
+                GUI.backgroundColor = restoreBackColor;
+            }
+            UnityEditor.Handles.EndGUI();
+        }
+
     }
 }
