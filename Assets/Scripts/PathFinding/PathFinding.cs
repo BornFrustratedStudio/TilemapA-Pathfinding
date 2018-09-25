@@ -9,20 +9,13 @@ namespace BornFrustrated.Pathfinding
     public class PathFinding : MonoBehaviour
     {
         public NodeGrid grid;
-        public PathRequestManager pathRequest;
 
         private void Awake()
         {
             grid = FindObjectOfType<NodeGrid>();
-            pathRequest = GetComponent<PathRequestManager>();
         }
 
-        public void StartFindPath(Vector3 startPos, Vector3 targetPos)
-        {
-            StartCoroutine(FindPath(startPos, targetPos));
-        }
-
-        IEnumerator FindPath(Vector3 startPos, Vector3 targetPos)
+        public void FindPath(PathRequest _request, Action<PathResult> _callback)
         {
             /// For Performance Only
             Stopwatch sw = new Stopwatch();
@@ -35,11 +28,11 @@ namespace BornFrustrated.Pathfinding
 
             /// Get Start Node From Position and set root as
             /// himself.
-            Node startNode = grid.NodeFromWorldPoint(startPos);
+            Node startNode = grid.NodeFromWorldPoint(_request.pathStart);
             startNode.parent = startNode;
 
             /// Get End Node From Position.
-            Node targetNode = grid.NodeFromWorldPoint(targetPos);
+            Node targetNode = grid.NodeFromWorldPoint(_request.pathEnd);
             
             /// If both StartNode and EndNode are walkable 
             if (startNode.Walkable && targetNode.Walkable)
@@ -98,7 +91,6 @@ namespace BornFrustrated.Pathfinding
                     }
                 }
             }
-            yield return null;
 
             /// If a path was found, then stop searching 
             /// and try to trace a path in order to get waypoints 
@@ -106,10 +98,10 @@ namespace BornFrustrated.Pathfinding
             if (pathSuccess)
             {
                 waypoints = RetracePath(startNode, targetNode);
+                pathSuccess = waypoints.Length > 0;
             }
 
-
-            pathRequest.FinishedProcessingPath(waypoints, pathSuccess);
+            _callback(new PathResult(waypoints, pathSuccess, _request.callback));
 
         }
 

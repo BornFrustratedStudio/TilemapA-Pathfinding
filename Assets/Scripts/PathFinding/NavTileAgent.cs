@@ -88,7 +88,7 @@ namespace BornFrustrated.Pathfinding
 				yield return new WaitForSeconds(.3f);
 			}
 			
-			PathRequestManager.RequestPath(transform.position, m_target.position, OnPathFound);
+			PathRequestManager.RequestPath(new PathRequest(transform.position, m_target.position, OnPathFound));
 
 			float sqrMoveThreshold = PATH_THRESHOLD;
 			Vector3 targetPosOld = m_target.position;
@@ -98,7 +98,7 @@ namespace BornFrustrated.Pathfinding
 				yield return new WaitForSeconds(PATH_UPDATE_TIME);
 				if ((m_target.position - targetPosOld).sqrMagnitude > sqrMoveThreshold)
 				{
-					PathRequestManager.RequestPath(transform.position, m_target.position, OnPathFound);
+					PathRequestManager.RequestPath(new PathRequest(transform.position, m_target.position, OnPathFound));
 					targetPosOld = m_target.position;
 				}
 			}
@@ -120,48 +120,6 @@ namespace BornFrustrated.Pathfinding
 
 		private IEnumerator FollowPath()
 		{
-            /*int  _pathIndex = 0;
-
-            float speedPercent = 1;
-
-            while (m_pathStatus == PathStatus.InProgress)
-            {
-                Vector2 pos2D = new Vector2(transform.position.x, transform.position.y);
-                while (m_path.turnBoundaries[_pathIndex].HasCrossedLine(pos2D))
-                {
-                    if (_pathIndex == m_path.finishLineIndex)
-                    {
-						m_pathStatus = PathStatus.Completed;
-                        break;
-                    }
-                    else
-                    {
-                        _pathIndex++;
-                    }
-                }
-
-                if (m_pathStatus == PathStatus.InProgress)
-                {
-
-                    if (_pathIndex >= m_path.slowDownIndex && m_stoppingDistance > 0)
-                    {
-                        speedPercent = Mathf.Clamp01(m_path.turnBoundaries[m_path.finishLineIndex].DistanceFromPoint(pos2D) / m_stoppingDistance);
-                        if (speedPercent < 0.01f)
-                        {
-							m_pathStatus = PathStatus.Completed;
-                        }
-                    }
-
-					Vector2 dir = (new Vector3(m_path.lookPoints[_pathIndex].x+.5f, m_path.lookPoints[_pathIndex].y +.5f) - transform.position).normalized;
-					//transform.position = new Vector3(m_path.lookPoints[_pathIndex].x + 0.5f, m_path.lookPoints[_pathIndex].y + 0.5f);
-					transform.Translate( dir * m_speed * speedPercent * Time.deltaTime);
-					Debug.Log(_pathIndex);
-                }
-
-                yield return null;
-
-            }*/
-
 			if (m_path.Length > 0) 
 			{
 				int _targetIndex = 0;
