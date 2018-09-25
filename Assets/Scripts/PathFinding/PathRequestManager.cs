@@ -6,16 +6,16 @@ namespace BornFrustrated.Pathfinding
 {
     public class PathRequestManager : MonoBehaviour
     {
+        
+        private Queue<PathRequest> pathRequestQueue = new Queue<PathRequest>();
+        private PathRequest currentPathRequest;
 
-        Queue<PathRequest> pathRequestQueue = new Queue<PathRequest>();
-        PathRequest currentPathRequest;
+        private static PathRequestManager instance;
+        private PathFinding pathfinding;
 
-        static PathRequestManager instance;
-        PathFinding pathfinding;
+        private bool isProcessingPath;
 
-        bool isProcessingPath;
-
-        void Awake()
+        private void Awake()
         {
             instance = this;
             pathfinding = GetComponent<PathFinding>();
@@ -45,7 +45,7 @@ namespace BornFrustrated.Pathfinding
             TryProcessNext();
         }
 
-        struct PathRequest
+        private struct PathRequest
         {
             public Vector3 pathStart;
             public Vector3 pathEnd;

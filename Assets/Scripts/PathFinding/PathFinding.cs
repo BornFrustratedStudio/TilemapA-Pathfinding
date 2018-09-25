@@ -83,7 +83,7 @@ namespace BornFrustrated.Pathfinding
                         }
 
 
-                        int newMovementCostToNeighbour = currentNode.GCost + GetDistance(currentNode, neighbour) + neighbour.MovePenality;
+                        int newMovementCostToNeighbour = currentNode.GCost + GetDistance(currentNode, neighbour) + neighbour.MovePenalty;
                         if (newMovementCostToNeighbour < neighbour.GCost || !openSet.Contains(neighbour))
                         {
                             neighbour.GCost = newMovementCostToNeighbour;
@@ -113,6 +113,12 @@ namespace BornFrustrated.Pathfinding
 
         }
 
+        /// <summary>
+        /// Return the distance between two node
+        /// </summary>
+        /// <param name="nodeA"></param>
+        /// <param name="nodeB"></param>
+        /// <returns></returns>
         int GetDistance(Node nodeA, Node nodeB)
         {
             int dstX = Mathf.Abs(nodeA.LocalPlace.x - nodeB.LocalPlace.x);

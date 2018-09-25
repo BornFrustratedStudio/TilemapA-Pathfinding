@@ -1,8 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.Tilemaps;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System;
 
 namespace BornFrustrated.Pathfinding
 {
@@ -21,6 +19,52 @@ namespace BornFrustrated.Pathfinding
             GenerateTiles();
         }
 
+        /// <summary>
+        /// Generate node from the tile map
+        /// </summary>
+        private void GenerateTiles()
+        {
+            tiles = new Dictionary<Vector2, Node>();
+
+            foreach (Vector3Int pos in tileMap.cellBounds.allPositionsWithin)
+            {
+                UnityEngine.Debug.Log("CULO");
+                var localPlace = new Vector3Int(pos.x, pos.y, pos.z);
+
+                if (!tileMap.HasTile(localPlace) || tileMap.GetTile<WalkableTile>(localPlace) == null) continue; // if this tile map has not tile inside skip to the nextone
+
+                int movementPenalty = 0;
+
+                Node tile = new Node
+                {
+                    LocalPlace = localPlace,
+                    WorldLocation = tileMap.CellToWorld(localPlace),
+                    TileBase = tileMap.GetTile(localPlace),
+                    Walkable = (tileMap.GetTile<WalkableTile>(localPlace).isWalkable), // Check if the current tilemap if equal to the target basetile, if is equal to true this tile map is not walkable
+                    Name = localPlace.x + " , " + localPlace.y,
+                };
+
+
+                if (!NodeIsWalkable(new Vector3Int(localPlace.x + 1, localPlace.y, localPlace.z)) || !NodeIsWalkable(new Vector3Int(localPlace.x - 1, localPlace.y, localPlace.z)))
+                    movementPenalty += obstacleProximityPenalty;
+
+
+                if (!tile.Walkable)
+                {
+                    movementPenalty += obstacleProximityPenalty * 2;
+                }
+
+                tile.MovePenalty = movementPenalty;
+
+                tiles.Add(tile.WorldLocation, tile);
+            }
+        }
+
+        /// <summary>
+        /// Get the neighbours from a node
+        /// </summary>
+        /// <param name="node">current node</param>
+        /// <returns>list of neighbours</returns>
         public List<Node> GetNeighbours(Node node)
         {
             List<Node> neighbours = new List<Node>();
@@ -35,12 +79,12 @@ namespace BornFrustrated.Pathfinding
                     float checkX = node.WorldLocation.x + x;
                     float checkY = node.WorldLocation.y + y;
 
-                    if(!tiles.ContainsKey(new Vector2(checkX, checkY)))
+                    if (!tiles.ContainsKey(new Vector2(checkX, checkY)))
                     {
                         continue;
                     }
 
-                    if ( tiles[new Vector2(checkX, checkY)] != null)
+                    if (tiles[new Vector2(checkX, checkY)] != null)
                     {
                         neighbours.Add(tiles[new Vector2(checkX, checkY)]);
                     }
@@ -50,31 +94,29 @@ namespace BornFrustrated.Pathfinding
             return neighbours;
         }
 
-        private void GenerateTiles()
+        /// <summary>
+        /// Check if the node is walkable
+        /// </summary>
+        /// <param name="position">position</param>
+        /// <returns>if is walkable</returns>
+        public bool NodeIsWalkable(Vector3Int position)
         {
-            tiles = new Dictionary<Vector2, Node>();
+            var localPlace = new Vector3Int(position.x, position.y, position.z);
 
-            foreach (Vector3Int pos in tileMap.cellBounds.allPositionsWithin)
-            {
-                UnityEngine.Debug.Log("CULO");
-                var localPlace = new Vector3Int(pos.x, pos.y, pos.z);
+            if (!tileMap.HasTile(localPlace) || tileMap.GetTile<WalkableTile>(localPlace) == null)
+                return false;
 
-                if (!tileMap.HasTile(localPlace) || tileMap.GetTile<WalkableTile>(localPlace) == null) continue; // if this tile map has not tile inside skip to the nextone
-
-                int movementPenalty = 0;
-
-                var tile = new Node
-                {
-                    LocalPlace = localPlace,
-                    WorldLocation = tileMap.CellToWorld(localPlace),
-                    TileBase = tileMap.GetTile(localPlace),
-                    Walkable = (tileMap.GetTile<WalkableTile>(localPlace).isWalkable), // Check if the current tilemap if equal to the target basetile, if is equal to true this tile map is not walkable
-                    Name = localPlace.x + " , " + localPlace.y,
-                };
-                tiles.Add(tile.WorldLocation, tile);
-            }
+            if (!tileMap.GetTile<WalkableTile>(localPlace).isWalkable)
+                return false;
+            else
+                return true;
         }
 
+        /// <summary>
+        /// Get the node from a world position
+        /// </summary>
+        /// <param name="worldPosition">world position</param>
+        /// <returns>node</returns>
         public Node NodeFromWorldPoint(Vector3 worldPosition)
         {
  
@@ -89,92 +131,5 @@ namespace BornFrustrated.Pathfinding
             }
             return null;
         }
-
-//         private void Update()
-//         {
-            
-//             if (player != null)
-//                CheckPlayer();
-
-//         }
-//         #region Shitty path
-//         Action<Vector3[], bool> point;
-//         public Transform target;
-
-// private void Start() {
-//     PathRequestManager.RequestPath(player.position, target.position, point);
-// }
-
-//         private void OnEnable()
-//         {
-//             point += CheckPathBox;
-//         }
-//         private void OnDisable()
-//     {
-//            point -= CheckPathBox;
-//         }
-
-//         void CheckPathBox(Vector3[] point, bool aasd)
-//         {
-//            List<Node> node = new List<Node>();
-
-//            for (int i = 0; i < point.Length; i++)
-//            {
-//                if (tiles.ContainsKey(point[i]))
-//                {
-//                    node.Add(tiles[new Vector3(point[i].x,point[i].y,0)]);
-//                }
-
-//            }
-
-//            if (node.Count > 0)
-//            {
-//                foreach (Node n in node)
-//                {
-//                    UnityEngine.Debug.Log("Pippo");
-//                    tileMap.SetColor(n.LocalPlace, Color.gray);
-//                    tileMap.RefreshTile(n.LocalPlace);
-//                }
-//            }
-//         }
-
-//         private void CheckPlayer()
-//         {
-//             var localPlace = tileMap.WorldToCell(player.position);
-
-//             var PlayerNode = new Node
-//             {
-//                 LocalPlace = localPlace,
-//                 WorldLocation = tileMap.CellToWorld(localPlace),
-//                 TileBase = tileMap.GetTile(localPlace),
-//                 Name = localPlace.x + " , " + localPlace.y,
-//             };
-
-//             List<Node> cell = GetNeighbours(PlayerNode);
-//             if(cell.Count > 0)
-//             {
-//                 foreach (Node n in cell)
-//                 {
-//                     tileMap.SetColor(n.LocalPlace, Color.black);
-//                     tileMap.RefreshTile(n.LocalPlace);
-//                 }
-//             }
-//             Stopwatch sw = new Stopwatch();
-//             sw.Start();
-//             NodeFromWorldPoint(player.position);
-//             sw.Stop();
-//             UnityEngine.Debug.Log("Node Found in : " + sw.ElapsedMilliseconds + " ms");
-//             foreach (Node n in tiles.Values)
-//             {
-//                 if (PlayerNode.LocalPlace == n.LocalPlace)
-//                 {
-//                    UnityEngine. Debug.Log("position " + n.LocalPlace + "Position " + n.WorldLocation);
-//                     if (!n.Walkable)
-//                         UnityEngine.Debug.Log("Player On No Walkable Zone");
-
-//                 }
-//             }
-//         }
-
     }
 }
