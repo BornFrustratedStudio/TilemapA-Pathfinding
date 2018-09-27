@@ -23,6 +23,20 @@ namespace BornFrustrated.Pathfinding
 
 		private Path	  m_path;
 		private bool 	  m_isStopped;
+		private Vector2   m_position;
+		private Vector2   m_velocity;
+		private float     m_maxSpeed = 3.5f;
+		private float     m_maxForce = 100;
+		private Vector2   m_currentWaypoint;
+
+	private float m_accelerationValue = 0;
+		///The distance to start slowing down
+	public float slowingDistance     = 1;
+	///The rate at which it will accelerate
+	public float accelerationRate    = 2;
+	///The rate at which it will slow down
+	public float decelerationRate    = 2;
+
 		[SerializeField]
 		private Transform m_target;
 		private Action<Vector3[], bool> point;
@@ -35,6 +49,21 @@ namespace BornFrustrated.Pathfinding
 		public float 	 StoppingDistance { get { return m_stoppingDistance; } }
 		public bool      IsStopped { get { return m_isStopped; } }
 		public PathStatus GetPathStatus { get { return m_pathStatus; } }
+		
+		
+public float remainingDistance{
+		get
+		{
+			if (m_pathStatus != PathStatus.InProgress){
+				return 0;
+			}
+
+			float dist= Vector2.Distance(transform.position, m_currentWaypoint);
+
+
+			return dist;			
+		}
+	}
 
 		const float PATH_UPDATE_TIME = 0.2f;
 		
@@ -61,6 +90,7 @@ namespace BornFrustrated.Pathfinding
 			PlayPath();		
 
 			m_pathStatus = (_target == null) ? PathStatus.Ready : PathStatus.InProgress;	
+
 		}
 		#endregion
 
@@ -123,28 +153,55 @@ namespace BornFrustrated.Pathfinding
 			if (m_path.Length > 0) 
 			{
 				int _targetIndex = 0;
-				Vector2 currentWaypoint = m_path.points[0];
+				m_currentWaypoint = m_path.points[0];
 
 				while (true) 
 				{
-					if ((Vector2)transform.position == currentWaypoint) 
+					float proximity = ((Vector2)m_path.points[ m_path.points.Length -1] == m_currentWaypoint)? m_stoppingDistance : 0.05f;
+					if (((Vector2)transform.position - m_currentWaypoint).sqrMagnitude <= proximity)
 					{
+					
 						_targetIndex++;
 
-						if (_targetIndex >= m_path.Length) 
+						if (_targetIndex >= m_path.points.Length) 
 						{
 							yield break;
 						}
 
-						currentWaypoint = m_path.points[_targetIndex];
-						currentWaypoint = new Vector3(currentWaypoint.x + .5f, currentWaypoint.y + .5f);
+						m_currentWaypoint = m_path.points[_targetIndex];
+						m_currentWaypoint = new Vector3(m_currentWaypoint.x + .5f, m_currentWaypoint.y + .5f);
 					}	
-
-					transform.position = Vector2.MoveTowards (transform.position, currentWaypoint, m_speed * Time.deltaTime);
-				yield return null;
-
+					
+					yield return null;
 				}
 			}
+			yield return null;
+		}
+
+		private void LateUpdate() 
+		{
+			if (m_maxSpeed <= 0 || m_pathStatus != PathStatus.InProgress)
+				return;
+		
+
+			//calculate velocities
+			if (remainingDistance < slowingDistance){
+			
+				m_accelerationValue = 0;
+				m_velocity += Arrive(m_currentWaypoint);
+
+			} else {
+
+				m_velocity += Seek(m_currentWaypoint);
+				m_accelerationValue += accelerationRate * Time.deltaTime;
+				m_accelerationValue = Mathf.Clamp01(m_accelerationValue);
+				m_velocity *= m_accelerationValue;
+		}
+
+		m_velocity = Truncate(m_velocity, m_maxSpeed);
+
+		
+		transform.position += new Vector3(m_velocity.x * Time.deltaTime, m_velocity.y * Time.deltaTime, 0);
 		}
 
 		private void PlayPath()
@@ -163,5 +220,40 @@ namespace BornFrustrated.Pathfinding
 				StopCoroutine(m_coroutine);
 			}
 		}
+
+        //limit the magnitude of a vector
+        Vector2 Truncate(Vector2 vec, float max)
+        {
+            if (vec.magnitude > max)
+            {
+                vec.Normalize();
+                vec *= max;
+            }
+            return vec;
+        }
+
+        Vector2 Seek(Vector2 pos)
+        {
+            Vector2 desiredVelocity = (pos - new Vector2(transform.position.x, transform.position.y)).normalized * m_maxSpeed;
+            Vector2 steer = desiredVelocity - m_velocity;
+            steer = Truncate(steer, m_maxForce);
+            return steer;
+        }
+
+		Vector2 Arrive(Vector2 pos){
+
+		var desiredVelocity = (pos - (Vector2)transform.position);
+		float dist= desiredVelocity.magnitude;
+
+		if (dist > 0){
+			var reqSpeed = dist / (decelerationRate * 0.3f);
+			reqSpeed = Mathf.Min(reqSpeed, m_maxSpeed);
+			desiredVelocity *= reqSpeed / dist;
+		}
+
+		Vector2 steer = desiredVelocity - m_velocity;
+		steer = Truncate(steer, m_maxForce);
+		return steer;
 	}
+    }
 }
