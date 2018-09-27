@@ -154,6 +154,8 @@ namespace BornFrustrated.Pathfinding
         {
             List<Vector3> waypoints = new List<Vector3>();
 
+            Vector2 oldDirection = new Vector2(0, 0);
+
             for (int i = 0; i < path.Count; i++)
             {
                 waypoints.Add(new Vector3(path[i].WorldLocation.x, path[i].WorldLocation.y, 0));
