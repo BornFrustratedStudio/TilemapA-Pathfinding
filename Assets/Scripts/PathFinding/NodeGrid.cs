@@ -178,5 +178,17 @@ namespace BornFrustrated.Pathfinding
             UnityEditor.Handles.EndGUI();
         }
 
+
+        public bool Reachable(Node node)
+        {
+            List<Node> nodes = GetNeighbours(node);
+            int notReachable = 0;
+            foreach(Node n in nodes)
+            {
+                if (n.FCost == 0)
+                    notReachable++;
+            }
+            return notReachable < nodes.Count;
+        }
     }
 }

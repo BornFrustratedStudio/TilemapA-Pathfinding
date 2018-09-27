@@ -105,7 +105,7 @@ namespace BornFrustrated.Pathfinding
 
             PlayPath();
 
-            m_pathStatus = (_target == null) ? PathStatus.Ready : PathStatus.InProgress;
+            //m_pathStatus = (_target == null) ? PathStatus.Ready : PathStatus.InProgress;
 
         }
         #endregion
@@ -125,9 +125,12 @@ namespace BornFrustrated.Pathfinding
         private void LateUpdate()
         {
             if (m_maxSpeed <= 0 || m_pathStatus != PathStatus.InProgress)
+            {
+                m_velocity = Vector2.zero;
                 return;
+            }
 
-
+            //Debug.Log(m_velocity);
             //calculate velocities
             if (remainingDistance < slowingDistance)
             {
@@ -165,7 +168,7 @@ namespace BornFrustrated.Pathfinding
                 yield return new WaitForSeconds(.3f);
             }
 
-            PathRequestManager.RequestPath(new PathRequest(transform.position, m_target.position, OnPathFound));
+            PathRequestManager.RequestPath(new PathRequest(transform.position + new Vector3(-0.5f, -0.5f), m_target.position, OnPathFound));
 
             float sqrMoveThreshold = PATH_THRESHOLD;
             Vector3 targetPosOld = m_target.position;
@@ -175,7 +178,7 @@ namespace BornFrustrated.Pathfinding
                 yield return new WaitForSeconds(PATH_UPDATE_TIME);
                 if ((m_target.position - targetPosOld).sqrMagnitude > sqrMoveThreshold)
                 {
-                    PathRequestManager.RequestPath(new PathRequest(transform.position, m_target.position, OnPathFound));
+                    PathRequestManager.RequestPath(new PathRequest(transform.position + new Vector3(-0.5f, -0.5f), m_target.position, OnPathFound));
                     targetPosOld = m_target.position;
                 }
             }
@@ -185,13 +188,17 @@ namespace BornFrustrated.Pathfinding
         {
             if (pathSuccessful)
             {
-                Debug.Log("Total Waypoints: " + waypoints.Length);
+                //Debug.Log("Total Waypoints: " + waypoints.Length);
                 m_path = new Path(waypoints, transform.position, 1.0f, m_stoppingDistance);
 
                 StopCoroutine("FollowPath");
 
                 m_pathStatus = PathStatus.InProgress;
                 StartCoroutine("FollowPath");
+            }
+            else
+            {
+                m_pathStatus = PathStatus.Endless;
             }
         }
 
@@ -308,7 +315,7 @@ namespace BornFrustrated.Pathfinding
                     {
                         continue;
                     }
-
+                    Debug.Log("Slowing ai");
                     float mlt = otherAgent.avoidRadius + this.avoidRadius;
                     float dist = (lookAheadPos - otherAgent.Position).magnitude;
                     var str = (lookAheadPos - otherAgent.Position).normalized * mlt;

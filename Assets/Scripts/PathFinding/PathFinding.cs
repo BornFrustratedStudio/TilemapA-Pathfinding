@@ -33,7 +33,8 @@ namespace BornFrustrated.Pathfinding
 
             /// Get End Node From Position.
             Node targetNode = grid.NodeFromWorldPoint(_request.pathEnd);
-            
+
+            //UnityEngine.Debug.Log(grid.Reachable(targetNode));
             /// If both StartNode and EndNode are walkable 
             if (startNode.Walkable && targetNode.Walkable)
             {
@@ -89,7 +90,10 @@ namespace BornFrustrated.Pathfinding
                                 openSet.UpdateItem(neighbour);
                         }
                     }
+
                 }
+                if (!grid.Reachable(targetNode))
+                    pathSuccess = false;
             }
 
             /// If a path was found, then stop searching 
