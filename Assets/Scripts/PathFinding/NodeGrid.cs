@@ -48,7 +48,7 @@ namespace BornFrustrated.Pathfinding
                 };
 
 
-                if (!NodeIsWalkable(new Vector3Int(localPlace.x + 1, localPlace.y, localPlace.z)) || !NodeIsWalkable(new Vector3Int(localPlace.x - 1, localPlace.y, localPlace.z)))
+                if (!NodeIsWalkable(new Vector3Int(localPlace.x + 1, localPlace.y, localPlace.z)) || !NodeIsWalkable(new Vector3Int(localPlace.x - 1, localPlace.y, localPlace.z))|| !NodeIsWalkable(new Vector3Int(localPlace.x, localPlace.y+1, localPlace.z)) || !NodeIsWalkable(new Vector3Int(localPlace.x, localPlace.y-1, localPlace.z)))
                     movementPenalty += obstacleProximityPenalty;
 
 

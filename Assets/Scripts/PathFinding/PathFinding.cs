@@ -29,76 +29,77 @@ namespace BornFrustrated.Pathfinding
             /// Get Start Node From Position and set root as
             /// himself.
             Node startNode = grid.NodeFromWorldPoint(_request.pathStart);
+            if (startNode == null)
+                startNode = grid.FindTheMostNearNode(_request.pathStart);
+
             startNode.parent = startNode;
 
             /// Get End Node From Position.
             Node targetNode = grid.NodeFromWorldPoint(_request.pathEnd);
 
-            if(targetNode == null)
+            if (targetNode == null)
             {
                 targetNode = grid.FindTheMostNearNode(_request.pathEnd);
             }
 
-            /// If both StartNode and EndNode are walkable 
-            if (startNode.Walkable )
+
+            /// Analyze Nodes with Heap Data Structure and store 
+            /// the ones not analyzed yet.
+            Heap<Node> openSet = new Heap<Node>(grid.tiles.Count);
+            openSet.Add(startNode);
+
+            /// Store Already Analyzed Nodes.
+            HashSet<Node> closedSet = new HashSet<Node>();
+
+            /// While there are nodes to analyze. . .
+            while (openSet.Count > 0)
             {
-                /// Analyze Nodes with Heap Data Structure and store 
-                /// the ones not analyzed yet.
-                Heap<Node>    openSet = new Heap<Node>(grid.tiles.Count);
-                openSet.Add(startNode);
+                /// Get The first node and analyze.
+                Node currentNode = openSet.RemoveFirst();
+                /// Add current node into already analyzed stack.
+                closedSet.Add(currentNode);
 
-                /// Store Already Analyzed Nodes.
-                HashSet<Node> closedSet = new HashSet<Node>();
-                
-                /// While there are nodes to analyze. . .
-                while (openSet.Count > 0)
+                /// If Current node is our target, close path and 
+                /// break the loop.
+                if (currentNode == targetNode)
                 {
-                    /// Get The first node and analyze.
-                    Node currentNode = openSet.RemoveFirst();
-                    /// Add current node into already analyzed stack.
-                    closedSet.Add(currentNode);
+                    sw.Stop();
+                    pathSuccess = true;
 
-                    /// If Current node is our target, close path and 
-                    /// break the loop.
-                    if (currentNode == targetNode)
-                    {
-                        sw.Stop();
-                        pathSuccess = true;
-
-                        UnityEngine.Debug.Log("Path found: " + sw.ElapsedMilliseconds + " ms");
-                        break;
-                    }
-
-                    /// Otherwhise, analyze every neighbour of the selected node
-                    /// and check here its values.
-                    foreach (Node neighbour in grid.GetNeighbours(currentNode))
-                    {
-                        /// Only if neighbour is not walkable or if it was already 
-                        /// analyzed, then continue and check another one.    
-                        if (!neighbour.Walkable || closedSet.Contains(neighbour))
-                        {
-                            continue;
-                        }
-
-
-                        int newMovementCostToNeighbour = currentNode.GCost + GetDistance(currentNode, neighbour) + neighbour.MovePenalty;
-                        if (newMovementCostToNeighbour < neighbour.GCost || !openSet.Contains(neighbour))
-                        {
-                            neighbour.GCost = newMovementCostToNeighbour;
-                            neighbour.HCost = GetDistance(neighbour, targetNode);
-                            neighbour.parent = currentNode;
-
-                            if (!openSet.Contains(neighbour))
-                                openSet.Add(neighbour);
-                            else
-                                openSet.UpdateItem(neighbour);
-                        }
-                    }
-
+                    UnityEngine.Debug.Log("Path found: " + sw.ElapsedMilliseconds + " ms");
+                    break;
                 }
-                    if (!grid.Reachable(targetNode))
-                            pathSuccess = false;
+
+                /// Otherwhise, analyze every neighbour of the selected node
+                /// and check here its values.
+                foreach (Node neighbour in grid.GetNeighbours(currentNode))
+                {
+                    /// Only if neighbour is not walkable or if it was already 
+                    /// analyzed, then continue and check another one.    
+                    if (!neighbour.Walkable || closedSet.Contains(neighbour))
+                    {
+                        continue;
+                    }
+
+
+                    int newMovementCostToNeighbour = currentNode.GCost + GetDistance(currentNode, neighbour) + neighbour.MovePenalty;
+                    if (newMovementCostToNeighbour < neighbour.GCost || !openSet.Contains(neighbour))
+                    {
+                        neighbour.GCost = newMovementCostToNeighbour;
+                        neighbour.HCost = GetDistance(neighbour, targetNode);
+                        neighbour.parent = currentNode;
+
+                        if (!openSet.Contains(neighbour))
+                            openSet.Add(neighbour);
+                        else
+                            openSet.UpdateItem(neighbour);
+                    }
+                }
+
             }
+            if (!grid.Reachable(targetNode))
+                pathSuccess = false;
+
 
             /// If a path was found, then stop searching 
             /// and try to trace a path in order to get waypoints 

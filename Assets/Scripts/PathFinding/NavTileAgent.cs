@@ -276,25 +276,26 @@ namespace BornFrustrated.Pathfinding
             var currentLookAheadDistance = Mathf.Lerp(0, m_lookAheadDistance, m_velocity.magnitude / Speed);
             var lookAheadPos = Position + m_velocity.normalized * currentLookAheadDistance;
 
-            Debug.DrawLine(Position, lookAheadPos, Color.blue);
-            Debug.Log(lookAheadPos);
+            //Debug.DrawLine(Position, lookAheadPos, Color.blue);
+            //Debug.Log(lookAheadPos);
 
-          /*  if (!map.NodeIsWalkable(Vector3Int.FloorToInt(Position)))
+            if (!map.NodeIsWalkable(Vector3Int.FloorToInt(Position)))
             {
                 m_velocity -= (lookAheadPos - Position);
-            }*/
+            }
 
-        /*    if (avoidRadius > 0)
+
+            if (m_avoidRadius > 0)
             {
                 for (int i = 0; i < m_listOfAgents.Count; i++)
                 {
                     NavTileAgent otherAgent = m_listOfAgents[i];
-                    if (otherAgent == this || otherAgent.avoidRadius <= 0)
+                    if (otherAgent == this || otherAgent.m_avoidRadius <= 0)
                     {
                         continue;
                     }
                     
-                    float mlt = otherAgent.avoidRadius + this.avoidRadius;
+                    float mlt = otherAgent.m_avoidRadius + this.m_avoidRadius;
                     float dist = (lookAheadPos - otherAgent.Position).magnitude;
                     var str = (lookAheadPos - otherAgent.Position).normalized * mlt;
                     var steer = Vector3.Lerp((Vector3)str, Vector3.zero, dist / mlt);
@@ -302,7 +303,7 @@ namespace BornFrustrated.Pathfinding
 
                     Debug.DrawLine(otherAgent.Position, otherAgent.Position + str, new Color(1, 0, 0, 0.1f));
                 }
-            }*/
+            }
         }
         #endregion
 
@@ -324,7 +325,7 @@ namespace BornFrustrated.Pathfinding
             if (m_maxSpeed <= 0 || !HasPath || IsStopped)
             {
                 m_velocity = Vector2.zero;
-                Debug.Log(this.gameObject.name + " - Restart");
+                //Debug.Log(this.gameObject.name + " - Restart");
                 return;
             }
 
@@ -341,10 +342,10 @@ namespace BornFrustrated.Pathfinding
                 m_velocity *= m_accelerationValue;
             }
 
-            LookAhead();
-            
-            m_velocity = Truncate(m_velocity, m_maxSpeed);            
-            
+            //LookAhead();
+
+            m_velocity = Truncate(m_velocity, m_maxSpeed);
+
             Position +=  m_velocity * Time.deltaTime;
 
             if (RemainingDistance <= StoppingDistance)
@@ -731,4 +732,4 @@ namespace BornFrustrated.Pathfinding
 
 */
     }
-}
+    }
