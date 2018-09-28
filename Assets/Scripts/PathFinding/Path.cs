@@ -11,6 +11,8 @@ public class Path
 
     public int Length { get { return points.Length; } }
 
+    public int CurrentPoint { get; set; }
+
     public Path(Vector3[] waypoints, Vector3 startPos, float turnDst, float stoppingDst)
     {
         points = waypoints;

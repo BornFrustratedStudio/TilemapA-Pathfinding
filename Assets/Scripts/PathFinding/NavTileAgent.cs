@@ -67,7 +67,7 @@ namespace BornFrustrated.Pathfinding
 
                 float dist = Vector2.Distance(Position,m_currentWaypoint);
 
-                for (int i = 0; i < m_path.points.Length; i++)
+                for (int i = m_path.CurrentPoint; i < m_path.points.Length; i++)
                 {
                     dist += Vector2.Distance(m_path.points[i], m_path.points[i == m_path.points.Length - 1 ? i : i + 1]);
                 }
@@ -130,17 +130,13 @@ namespace BornFrustrated.Pathfinding
                 return;
             }
 
-            //Debug.Log(m_velocity);
-            //calculate velocities
             if (remainingDistance < slowingDistance)
             {
                 m_accelerationValue = 0;
                 m_velocity += Arrive(m_currentWaypoint);
-
             }
             else
             {
-
                 m_velocity += Seek(m_currentWaypoint);
                 m_accelerationValue += accelerationRate * Time.deltaTime;
                 m_accelerationValue = Mathf.Clamp01(m_accelerationValue);
@@ -151,6 +147,15 @@ namespace BornFrustrated.Pathfinding
 
             LookAhead();
             transform.position += new Vector3(m_velocity.x * Time.deltaTime, m_velocity.y * Time.deltaTime, 0);
+
+            if ((remainingDistance <= StoppingDistance))
+            {
+                if (m_path.CurrentPoint == m_path.points.Length && m_pathStatus == PathStatus.InProgress)
+                {
+                    m_pathStatus = PathStatus.Completed;
+                }
+            }
+
         }
 
         void OnDisable()
@@ -175,9 +180,11 @@ namespace BornFrustrated.Pathfinding
 
             while (!m_isStopped)
             {
+                Debug.Log("asdadwa");
                 yield return new WaitForSeconds(PATH_UPDATE_TIME);
                 if ((m_target.position - targetPosOld).sqrMagnitude > sqrMoveThreshold)
                 {
+                    Debug.Log("Change Path");
                     PathRequestManager.RequestPath(new PathRequest(transform.position + new Vector3(-0.5f, -0.5f), m_target.position, OnPathFound));
                     targetPosOld = m_target.position;
                 }
@@ -191,10 +198,10 @@ namespace BornFrustrated.Pathfinding
                 //Debug.Log("Total Waypoints: " + waypoints.Length);
                 m_path = new Path(waypoints, transform.position, 1.0f, m_stoppingDistance);
 
-                StopCoroutine("FollowPath");
+                StopCoroutine(FollowPath());
 
                 m_pathStatus = PathStatus.InProgress;
-                StartCoroutine("FollowPath");
+                StartCoroutine(FollowPath());
             }
             else
             {
@@ -206,23 +213,33 @@ namespace BornFrustrated.Pathfinding
         {
             if (m_path.Length > 0)
             {
-                int _targetIndex = 0;
+                m_path.CurrentPoint = 0;
                 m_currentWaypoint = m_path.points[0];
+
+                float proximity = 0.05f;
 
                 while (true)
                 {
-                    float proximity = ((Vector2)m_path.points[m_path.points.Length - 1] == m_currentWaypoint) ? m_stoppingDistance : 0.05f;
+                    if ((m_path.points.Length - 1 == m_path.CurrentPoint))
+                    {
+                        //Debug.Log("Found last point");
+                        proximity = m_stoppingDistance;
+                    }
+                    //Debug.Log("Proximity " + proximity);
                     if (((Vector2)transform.position - m_currentWaypoint).sqrMagnitude <= proximity)
                     {
+                        //Debug.Log("Curret Waypoint" + m_path.CurrentPoint + " im arrivet to the current waypoint");
+                        m_path.CurrentPoint ++;
 
-                        _targetIndex++;
-
-                        if (_targetIndex >= m_path.points.Length)
+                        //Debug.Log(" next one is = " + m_path.CurrentPoint + "/" + (m_path.points.Length-1));
+                        if (m_path.CurrentPoint >= m_path.points.Length)
                         {
+                            //Debug.Log("i finish the path");
                             yield break;
                         }
 
-                        m_currentWaypoint = m_path.points[_targetIndex];
+                        m_currentWaypoint = m_path.points[m_path.CurrentPoint];
+
                         m_currentWaypoint = new Vector3(m_currentWaypoint.x + .5f, m_currentWaypoint.y + .5f);
                     }
 
