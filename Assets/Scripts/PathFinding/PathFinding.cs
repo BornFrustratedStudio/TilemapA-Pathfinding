@@ -37,7 +37,7 @@ namespace BornFrustrated.Pathfinding
             /// Get End Node From Position.
             Node targetNode = grid.NodeFromWorldPoint(_request.pathEnd);
 
-            if (targetNode == null)
+            if (targetNode == null || (targetNode != null && !targetNode.Walkable))
             {
                 targetNode = grid.FindTheMostNearNode(_request.pathEnd);
             }
