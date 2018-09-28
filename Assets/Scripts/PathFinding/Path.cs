@@ -5,19 +5,17 @@ public class Path
 {
     
     public readonly Vector3[] points;
-    //public readonly Line[] turnBoundaries;
     public readonly int finishLineIndex;
     public readonly int slowDownIndex;
 
-    public int Length { get { return points.Length; } }
-
-    public int CurrentPoint { get; set; }
+    public int Length          { get { return points.Length; } }
+    public int CurrentPoint    { get; set; }
+    public bool HasFinished    { get { return CurrentPoint >= Length; }}
+    public bool HasWaypoints   { get { return (points != null && points.Length > 0); } }
 
     public Path(Vector3[] waypoints, Vector3 startPos, float turnDst, float stoppingDst)
     {
         points = waypoints;
-        //turnBoundaries = new Line[lookPoints.Length];
-        //finishLineIndex = turnBoundaries.Length - 1;
 
         Vector2 previousPoint = V3ToV2(startPos);
         for (int i = 0; i < points.Length; i++)
@@ -25,7 +23,6 @@ public class Path
             Vector2 currentPoint = V3ToV2(points[i]);
             Vector2 dirToCurrentPoint = (currentPoint - previousPoint).normalized;
             Vector2 turnBoundaryPoint = (i == finishLineIndex) ? currentPoint : currentPoint - dirToCurrentPoint * turnDst;
-            //turnBoundaries[i] = new Line(turnBoundaryPoint, previousPoint - dirToCurrentPoint * turnDst);
             previousPoint = turnBoundaryPoint;
         }
 
