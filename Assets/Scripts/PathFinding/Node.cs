@@ -56,7 +56,7 @@ namespace BornFrustrated.Pathfinding
         public int FCost 
         {
             get { return GCost + HCost;  }
-            private set { FCost = value; }
+            set { FCost = value; }
         }
 
         /// <summary>

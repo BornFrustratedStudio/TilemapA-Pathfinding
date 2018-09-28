@@ -34,9 +34,13 @@ namespace BornFrustrated.Pathfinding
             /// Get End Node From Position.
             Node targetNode = grid.NodeFromWorldPoint(_request.pathEnd);
 
-            //UnityEngine.Debug.Log(grid.Reachable(targetNode));
+            if(targetNode == null)
+            {
+                targetNode = grid.FindTheMostNearNode(_request.pathEnd);
+            }
+
             /// If both StartNode and EndNode are walkable 
-            if (startNode.Walkable && targetNode.Walkable)
+            if (startNode.Walkable )
             {
                 /// Analyze Nodes with Heap Data Structure and store 
                 /// the ones not analyzed yet.
@@ -92,8 +96,8 @@ namespace BornFrustrated.Pathfinding
                     }
 
                 }
-                if (!grid.Reachable(targetNode))
-                    pathSuccess = false;
+                    if (!grid.Reachable(targetNode))
+                            pathSuccess = false;
             }
 
             /// If a path was found, then stop searching 

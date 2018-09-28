@@ -122,7 +122,6 @@ namespace BornFrustrated.Pathfinding
         /// <returns>node</returns>
         public Node NodeFromWorldPoint(Vector3 worldPosition)
         {
- 
             Vector3 localPlace = tileMap.WorldToCell(worldPosition);
 
             if (tiles.ContainsKey(localPlace))
@@ -139,6 +138,21 @@ namespace BornFrustrated.Pathfinding
         {
             if(Application.isPlaying && DebugNodeValue)
                 DebugFCost();
+        }
+
+        public Node FindTheMostNearNode(Vector3 worldPosition)
+        {
+            Vector3 reachPosition = Vector3.zero;
+
+            foreach(Vector3 p in tiles.Keys)
+            {
+                if (!tiles[p].Walkable)
+                    continue;
+
+                if (Vector3.Distance(worldPosition, reachPosition) > Vector3.Distance(p, worldPosition))
+                    reachPosition = p;
+            }
+            return tiles[reachPosition];
         }
 
         void DebugFCost()
